@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Portal Mix - Exercício de Avaliação de IHC</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Comic Sans MS, cursive;
+            background: linear-gradient(130deg, #fff8a1 0%, #f8b5d8 52%, #94eeff 100%);
+            color: #321b50
+        }
+
+        header {
+            background: #ff4a2f;
+            padding: 10px 18px;
+            border-bottom: 9px dotted #183b90;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        header h1 {
+            font-family: Georgia, serif;
+            color: #a8ff27;
+            margin: 0;
+            font-size: 2.1rem;
+            text-shadow: 3px 3px #521ab2
+        }
+
+        header span {
+            font: 11px Arial;
+            background: #5200a0;
+            color: yellow;
+            padding: 8px
+        }
+
+        .nav {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            background: #7ccbd7;
+            padding: 8px
+        }
+
+        .nav button:nth-child(1) {
+            background: lime;
+            color: blue;
+            border: 4px ridge magenta;
+            font-family: serif
+        }
+
+        .nav button:nth-child(2) {
+            background: #ebdcff;
+            border-radius: 30px;
+            font: 18px monospace
+        }
+
+        .nav button:nth-child(3) {
+            background: #2b2b2b;
+            color: #3b3b3b;
+            border: 0
+        }
+
+        .nav button:nth-child(4) {
+            background: orange;
+            transform: rotate(-3deg)
+        }
+
+        button {
+            cursor: pointer;
+            padding: 9px 16px
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: auto;
+            padding: 20px
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 2.1fr 0.85fr;
+            gap: 13px
+        }
+
+        .box {
+            border: 5px double #f72bb5;
+            background: rgba(255, 255, 255, .65);
+            padding: 13px;
+            box-shadow: 8px 8px #fda010
+        }
+
+        .left {
+            background: #ffef94
+        }
+
+        .right {
+            background: #6a2799;
+            color: #fff
+        }
+
+        .right p {
+            font-size: 11px
+        }
+
+        .little {
+            font: 12px Arial
+        }
+
+        .field {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin: 13px 0
+        }
+
+        input,
+        select {
+            padding: 9px;
+            border: 3px dashed #f74425;
+            max-width: 100%
+        }
+
+        input[type=email] {
+            background: #def6fb;
+            border-radius: 15px
+        }
+
+        input[type=text] {
+            background: #eae0ff
+        }
+
+        input[type=date] {
+            border: 1px solid #777
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center
+        }
+
+        .save {
+            background: #e53a28;
+            color: #fff;
+            border: 0;
+            border-radius: 18px;
+            font-size: 21px
+        }
+
+        .cancel {
+            background: #00c943;
+            color: #fff;
+            border: 4px solid blue
+        }
+
+        .mystery {
+            background: yellow;
+            border: 0;
+            color: #fff
+        }
+
+        .fake-link {
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer
+        }
+
+        .message {
+            min-height: 22px;
+            margin-top: 12px;
+            color: #9a9a9a;
+            font-size: 10px
+        }
+
+        .stat {
+            padding: 10px;
+            background: cyan;
+            color: red;
+            font: 22px Georgia;
+            transform: rotate(2deg)
+        }
+
+        .tiny {
+            font-size: 9px;
+            color: #7d777a
+        }
+
+        .toggle {
+            margin: 18px 0
+        }
+
+        .floating {
+            position: fixed;
+            bottom: 10px;
+            right: 12px;
+            background: lime;
+            color: #fff;
+            border: 5px ridge yellow;
+            border-radius: 50%;
+            width: 62px;
+            height: 62px;
+            font-size: 24px;
+            box-shadow: 3px 4px purple
+        }
+
+        .heading {
+            font-family: Georgia;
+            color: #b5008e;
+            text-transform: uppercase
+        }
+
+        footer {
+            padding: 20px;
+            color: #aca2a2;
+            text-align: right;
+            font-size: 10px
+        }
+
+        @media(max-width:740px) {
+            .layout {
+                grid-template-columns: 1fr
+            }
+
+            .container {
+                padding: 10px
+            }
+
+            header h1 {
+                font-size: 26px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>PORTAL miX ★</h1><span>v2? beta ultra sistema 2026</span>
+    </header>
+    <nav class="nav" aria-label="Menu principal"><button type="button" onclick="navegar('inicio')">CASA</button><button
+            type="button" onclick="navegar('cadastro')">Usuarios?</button><button type="button"
+            onclick="navegar('relatorios')">RELAT.</button><button type="button" onclick="navegar('ajuda')">Clique
+            AQUI!</button></nav>
+    <div class="container">
+        <div class="stat">BEM VINDO! Seu painel talvez esteja pronto...</div>
+        <h2 class="heading">Inscrição / cadastro / atualizar coisa</h2>
+        <div class="layout">
+            <aside class="box left">
+                <h2 style="font-family:monospace;color:#13b7ff">Menu????</h2>
+                <p class="fake-link" onclick="navegar('cadastro')">Criar novo</p><button type="button"
+                    style="background:pink;color:orange;border:2px dashed red" onclick="navegar('relatorios')">Ver
+                    coisas</button>
+                <p class="tiny">Não sabemos se é aqui que você precisa clicar.</p>
+                <div class="toggle"><label><input type="checkbox" checked> Desejo receber tudo (?)</label></div>
+                <p style="font-size:24px;color:orange;background:yellow">ATENÇÃO!</p>
+            </aside>
+            <main class="box">
+                <h3 style="color:#ff3b99;font-family:Times New Roman,serif">FORMULÁRIO 02-B</h3>
+                <p class="little">Preencha para continuar, ou não. Alguns campos podem ser importantes.</p>
+                <form id="form" onsubmit="enviar(event)">
+                    <div class="field"><label for="nome">Dado A</label><input id="nome" name="nome" type="text"
+                            placeholder="digite uma coisa"></div>
+                    <div class="field"><label for="email">Contato</label><input id="email" name="email" type="email"
+                            placeholder="nome@exemplo.com"></div>
+                    <div class="field"><label for="data">Quando?</label><input id="data" name="data" type="date"></div>
+                    <div class="field"><label for="tipo">X-9</label><select id="tipo" name="tipo">
+                            <option>-- escolha --</option>
+                            <option>Normal</option>
+                            <option>Outro</option>
+                            <option>Talvez</option>
+                        </select></div>
+                    <div class="actions"><button class="save" type="button" onclick="limpar()">SALVAR ✓</button><button
+                            class="cancel" type="submit">Apagar</button><button class="mystery" type="button"
+                            onclick="mensagem('')">???</button></div>
+                    <div id="msg" class="message" aria-live="off">&nbsp;</div>
+                </form>
+                <p class="tiny">Dica: os rótulos e a cor dos botões podem não significar o que parecem.</p>
+            </main>
+            <aside class="box right">
+                <h3 style="color:#ffbb00;font-family:monospace">P A I N E L</h3>
+                <p>Seu status: ?????</p>
+                <p style="color:#b7a0b7">As informações estão disponíveis em algum lugar.</p><button type="button"
+                    style="background:#7f00ad;color:#8215ac;border:0" onclick="navegar('status')">VER AGORA</button>
+                <p>Última atualização: --/--/----</p>
+            </aside>
+        </div>
+        <p style="font-family:Georgia;color:blue">Há vários caminhos para a mesma função, nomes pouco descritivos e
+            controles que fazem algo diferente do rótulo.</p>
+    </div><button class="floating" type="button" title="Ação sem explicação" onclick="navegar('surpresa')">?</button>
+    <footer>Portal Mix — Demonstração acadêmica. Nenhum dado é transmitido.</footer>
+    <script>
+        // As falhas abaixo são propositalmente inseridas para análise e redesenho em IHC.
+        function mensagem(t) { document.getElementById('msg').textContent = t || ' '; }
+        function limpar() { document.getElementById('form').reset(); mensagem(''); }
+        function enviar(e) { e.preventDefault(); mensagem('Operação 17 concluída ou talvez não.'); }
+        function navegar(area) { const msgs = { inicio: 'Tela inicial indisponível.', cadastro: 'Você já está aqui!', relatorios: 'Código 42.', ajuda: 'Confira os outros menus.', status: 'Sem dados.', surpresa: '??' }; mensagem(msgs[area] || ''); }
+    </script>
+</body>
+
+</html>

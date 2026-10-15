@@ -1,0 +1,119 @@
+const mobile=ctx.device==='Mobile';
+const W=mobile?390:1440;
+const screenIds=ctx.roots[mobile?'mobile':'desktop'];
+const data={nome:'Ana Souza',email:'ana@exemplo.com',nascimento:'14/03/1996',preferencia:'Retirada na loja'};
+function field(parent,label,value,hint,width,state='Default',optional=false,dropdown=false){
+    const n=instance(parent,ctx.components.fields[state],'Field/'+label,width);
+    property(n,'Label',label+(optional?' · Opcional':''));property(n,'Value',value);property(n,'Hint',hint);property(n,'Show trailing icon',dropdown);
+    if(state==='Error')property(n,'Error',label==='Nome completo'?'Informe seu nome, entre 2 e 100 caracteres.':label==='E-mail'?'Informe um e-mail válido, como nome@exemplo.com.':label==='Data de nascimento'?'A data de nascimento não pode estar no futuro.':'Selecione como prefere fazer suas compras.');
+    if(mobile){for(const t of n.findAllWithCriteria({types:['TEXT']})){t.fontSize=t.name==='Value'?16:t.name==='Label'?14:12;}}
+    return n;
+}
+function intro(parent,width){
+    const n=box(parent,'Boas-vindas',width,'VERTICAL',18,0);n.paddingTop=mobile?0:21;
+    const eyebrow=text(n,'FRESQUINHO PARA O SEU DIA.',10,'primary','semibold');eyebrow.letterSpacing={unit:'PIXELS',value:1.7};
+    const headline=text(n,mobile?'Seu mercado.\nDo seu jeito.':'Seu mercado.\nDo seu\njeito.',mobile?42:59,'ink','medium');headline.lineHeight={unit:'PERCENT',value:108};headline.letterSpacing={unit:'PIXELS',value:mobile?-2:-2.8};
+    const start=headline.characters.indexOf(mobile?'Do seu jeito.':'jeito.');headline.setRangeFills(start,headline.characters.length,[paint('primary')]);
+    text(n,'Cadastre-se no PortalMix e deixe suas próximas compras mais práticas. Seu supermercado, mais perto de você.',mobile?15:14,'muted');
+    const benefits=box(n,'Benefícios',width,'VERTICAL',12);
+    for(const [name,value]of [['clock','Cadastro rápido e sem custo.'],['basket','Você escolhe como quer comprar.']]){
+        const row=box(benefits,value,width,'HORIZONTAL',10);row.counterAxisAlignItems='CENTER';const circle=box(row,'Icon badge',27,'HORIZONTAL',0,5,'soft');circle.resize(27,27);circle.layoutSizingVertical='FIXED';circle.cornerRadius=14;icon(circle,name,17);text(row,value,12,'muted','regular',width-37);
+    }
+    if(!mobile){
+        const visual=box(n,'Ilustração vetorial editável',330,'VERTICAL',0,24,'soft');visual.cornerRadius=28;visual.counterAxisAlignItems='CENTER';
+        const card=box(visual,'Seu próximo carrinho',265,'VERTICAL',12,20,'white');card.cornerRadius=13;stroke(card,'line');
+        const kicker=text(card,'SEU PRÓXIMO CARRINHO',8,'muted','semibold');kicker.letterSpacing={unit:'PIXELS',value:1.4};
+        const row=box(card,'Compras',225,'HORIZONTAL',12);row.counterAxisAlignItems='CENTER';
+        const avatar=box(row,'Cesta',43,'HORIZONTAL',0,8,'soft');avatar.resize(43,43);avatar.layoutSizingVertical='FIXED';avatar.cornerRadius=22;icon(avatar,'basket',26);
+        const copy=box(row,'Mensagem',170,'VERTICAL',3);text(copy,'Boas compras começam aqui',11,'ink','semibold');text(copy,'Mais praticidade para o seu dia.',9,'muted');
+        divider(card,225);text(card,'Do mercado para a sua rotina',9,'primary');
+    }
+    const demo=box(n,'Transparência',width,'HORIZONTAL',8);icon(demo,'info',16,'muted');text(demo,'Esta é uma demonstração acadêmica. Nenhuma conta real será criada.',11,'muted','regular',width-24);
+    return n;
+}
+function registration(parent,width,state){
+    const step=state==='review'?2:state==='success'?3:1;
+    const card=box(parent,'Cadastro/Etapa '+step,width,'VERTICAL',0,0,'white');card.cornerRadius=15;stroke(card,'line');card.clipsContent=true;
+    const content=box(card,'Card content',width,'VERTICAL',0,mobile?21:33);content.paddingBottom=24;
+    const inner=width-2*(mobile?21:33);
+    const kicker=box(content,'Card topline',inner,'HORIZONTAL',12);kicker.primaryAxisAlignItems='SPACE_BETWEEN';kicker.counterAxisAlignItems='CENTER';
+    const k=box(kicker,'Seu cadastro',150,'HORIZONTAL',7);icon(k,'user',16,'muted');const label=text(k,'SEU CADASTRO',9,'muted','semibold',125,null,false);label.letterSpacing={unit:'PIXELS',value:1.4};text(kicker,'Etapa '+step+' de 3',10,'muted','regular',75,null,false);
+    const stepSpace=box(content,'Progresso',inner,'VERTICAL',24);stepSpace.paddingTop=26;stepSpace.paddingBottom=26;instance(stepSpace,ctx.components.steps[ctx.device+'/'+step],'Stepper',inner);divider(stepSpace,inner);
+    text(content,state==='review'?'Está tudo certinho?':state==='success'?'Tudo certo por aqui!':'Seu cadastro, sem complicação.',25,'ink','semibold');
+    const sub=text(content,state==='review'?'Confira seus dados. Você ainda pode editar.':state==='success'?'Você concluiu a demonstração de cadastro.':'Preencha seus dados e suas preferências de compra.',mobile?13:12,'muted');
+    if(step===1){
+        const form=box(content,'Formulário',inner,'VERTICAL',15);form.paddingTop=20;
+        text(form,'Todos os campos são obrigatórios, exceto os indicados como opcionais.',mobile?11:10,'muted');
+        if(state==='error'){
+            const errors=box(form,'Resumo de erros',inner,'VERTICAL',6,14,'errorBg');errors.cornerRadius=8;stroke(errors,'error');text(errors,'Confira os campos abaixo para continuar.',12,'error','semibold');text(errors,'• Informe seu nome.\n• Confira o endereço de e-mail.\n• A data não pode estar no futuro.\n• Selecione sua preferência de compra.',11,'error');
+        }
+        const filled=state==='filled';const erro=state==='error';
+        field(form,'Nome completo',filled?data.nome:'Digite seu nome completo','Como você gostaria de ser chamado?',inner,erro?'Error':'Default');
+        field(form,'E-mail',filled?data.email:erro?'ana@':'voce@exemplo.com','Use um endereço de e-mail válido.',inner,erro?'Error':'Default');
+        const row=box(form,'Nascimento e preferência',inner,mobile?'VERTICAL':'HORIZONTAL',15);
+        const fw=mobile?inner:(inner-15)/2;
+        field(row,'Data de nascimento',filled?data.nascimento:erro?'20/10/2030':'dd/mm/aaaa','Informe somente se quiser.',fw,erro?'Error':'Default',true);
+        field(row,'Preferência de compra',filled?data.preferencia:'Selecione uma opção','Selecione como prefere comprar.',fw,erro?'Error':'Default',false,true);
+        const check=instance(form,ctx.components.checkboxes[String(filled)],'Checkbox/Ofertas',inner);
+        const actions=box(form,'Ações do cadastro',inner,'HORIZONTAL',10);actions.paddingTop=8;actions.counterAxisAlignItems='CENTER';actions.primaryAxisAlignItems='SPACE_BETWEEN';
+        const clear=button(actions,'Limpar dados',filled||erro?'Ghost':'Disabled','limpar');clear.resize(mobile?105:125,46);
+        const submit=button(actions,'Revisar cadastro','Primary',filled?'revisar':'validar');submit.resize(mobile?175:200,46);
+        const hint=text(form,'Você poderá revisar tudo antes de concluir.',10,'muted');hint.textAlignHorizontal='RIGHT';
+    }else if(step===2){
+        const review=box(content,'Resumo do cadastro',inner,'VERTICAL',0);review.paddingTop=21;
+        for(const [key,value]of [['Nome completo',data.nome],['E-mail',data.email],['Data de nascimento',data.nascimento],['Preferência de compra',data.preferencia],['Receber ofertas','Sim, desejo receber']]){
+            const item=box(review,key,inner,'VERTICAL',4);item.paddingTop=item.paddingBottom=12;text(item,key,11,'muted');text(item,value,14,'ink');divider(item,inner);
+        }
+        const notice=note(content,'Este é um exercício de usabilidade. Ao concluir, seus dados não serão enviados nem salvos.',inner);notice.paddingTop=13;
+        const actions=box(content,'Ações da revisão',inner,'HORIZONTAL',10);actions.paddingTop=24;actions.counterAxisAlignItems='CENTER';actions.primaryAxisAlignItems='SPACE_BETWEEN';button(actions,'Editar dados','Ghost','editar').resize(mobile?105:125,46);button(actions,'Concluir simulação','Primary','concluir').resize(mobile?175:200,46);
+    }else{
+        const success=box(content,'Sucesso',inner,'VERTICAL',20);success.paddingTop=26;success.counterAxisAlignItems='CENTER';
+        const badge=box(success,'Confirmação',72,'HORIZONTAL',0,19,'soft');badge.resize(72,72);badge.layoutSizingVertical='FIXED';badge.cornerRadius=36;icon(badge,'check',34);
+        text(success,'Pronto, Ana.',23,'ink','semibold').textAlignHorizontal='CENTER';text(success,'Do primeiro passo à confirmação,\nsimples como deve ser.',13,'muted').textAlignHorizontal='CENTER';
+        note(success,'Nenhuma conta foi criada e nenhum e-mail foi enviado. Seus dados permanecem apenas nesta página até você sair ou reiniciar.',inner);
+        button(success,'Começar um novo cadastro','Primary','reiniciar',true);
+    }
+    const privacy=box(card,'Privacidade do cadastro',width,'HORIZONTAL',5,14,'page');privacy.primaryAxisAlignItems='CENTER';privacy.counterAxisAlignItems='CENTER';privacy.layoutWrap='WRAP';
+    icon(privacy,'lock',14,'muted');text(privacy,'Seus dados ficam só nesta demonstração.',mobile?9:10,'muted','regular',mobile?230:245,null,false);text(privacy,'Saiba mais',10,'primary','regular',65,'action/privacidade',false);
+    return card;
+}
+function modalScreen(screen,kind){
+    const h=mobile?844:1024;screen.resize(W,h);screen.layoutSizingVertical='FIXED';screen.clipsContent=true;
+    const overlay=box(screen,'Modal overlay',W,'VERTICAL',0,16);overlay.layoutPositioning='ABSOLUTE';overlay.resize(W,h);overlay.layoutSizingVertical='FIXED';overlay.x=0;overlay.y=0;overlay.fills=[{...paint('ink'),opacity:.45}];overlay.counterAxisAlignItems='CENTER';overlay.primaryAxisAlignItems='CENTER';
+    const w=mobile?358:490;const d=box(overlay,'Dialog/'+kind,w,'VERTICAL',16,26,'white');d.cornerRadius=16;stroke(d,'line');const inner=w-52;
+    const header=box(d,'Dialog header',inner,'HORIZONTAL',0);header.primaryAxisAlignItems='SPACE_BETWEEN';header.counterAxisAlignItems='CENTER';
+    const circle=box(header,'Dialog icon',46,'HORIZONTAL',0,11,'soft');circle.resize(46,46);circle.layoutSizingVertical='FIXED';circle.cornerRadius=12;icon(circle,kind==='limpar'?'alert':kind==='privacidade'?'shield':'help',24);
+    const close=box(header,'action/fechar',44,'HORIZONTAL',0,12);close.resize(44,44);close.layoutSizingVertical='FIXED';icon(close,'close',20,'muted');
+    const titles={ajuda:'Como podemos ajudar?',privacidade:'Seus dados, com transparência',limpar:'Limpar os dados preenchidos?','como-funciona':'Um cadastro no seu ritmo'};
+    text(d,titles[kind],23,'ink','semibold');
+    if(kind==='ajuda'){
+        text(d,'O cadastro tem três passos: preencha, revise e conclua a simulação.',14,'muted');
+        for(const [q,a]of [['O que preciso preencher?','Nome, e-mail e preferência de compra. A data de nascimento e o recebimento de ofertas são opcionais.'],['Como corrijo uma informação?','Na revisão, use “Editar dados”. Se houver um erro, a mensagem ao lado do campo explica como corrigir.'],['Posso usar o teclado?','Use Tab para avançar, Shift + Tab para voltar e Enter para acionar o botão em foco. Escape fecha esta janela.']]){const item=box(d,q,inner,'VERTICAL',5);text(item,q,14,'ink','semibold');text(item,a,13,'muted');}
+        text(d,'Esta demonstração não cria contas nem envia mensagens.',11,'muted');
+    }
+    if(kind==='privacidade')for(const paragraph of ['Esta página é uma demonstração acadêmica de usabilidade, sem serviço de cadastro conectado.','Os campos ficam somente na memória desta página. Não usamos cookies, armazenamento local ou ferramentas de análise para guardar seu preenchimento.','Ao recarregar ou fechar a página, os dados do formulário são descartados. Você também pode usar “Limpar dados”.','A preferência de receber ofertas é apenas demonstrativa. Nenhuma mensagem será enviada.'])text(d,paragraph,14,'muted');
+    if(kind==='como-funciona')for(const [title,value]of [['1. Preencha seus dados','Informe nome, e-mail e como prefere fazer suas compras.'],['2. Revise com calma','Confira o resumo e volte para editar o que precisar.'],['3. Conclua a demonstração','Veja a confirmação. Nenhuma conta real será criada.']]){const item=box(d,title,inner,'VERTICAL',5);text(item,title,14,'ink','semibold');text(item,value,13,'muted');}
+    if(kind==='limpar'){
+        text(d,'Todos os campos e preferências serão apagados. Esta ação não pode ser desfeita.',14,'muted');
+        const actions=box(d,'Dialog actions',inner,'VERTICAL',9);button(actions,'Continuar preenchendo','Secondary','fechar',true);button(actions,'Sim, limpar dados','Danger','confirmar-limpeza',true);
+    }else button(d,'Entendi','Primary','fechar',true);
+    return d;
+}
+const states=['empty','filled','error','review','success','ajuda','privacidade','limpar','como-funciona'];
+const results=[];
+for(let i=0;i<screenIds.length;i++){
+    const screen=await figma.getNodeByIdAsync(screenIds[i]);if(screen.children.length)throw new Error('Tela já preenchida: '+screen.name);
+    instance(screen,ctx.components.headers[ctx.device],'Header');
+    const main=box(screen,'Main',W,'VERTICAL',mobile?25:36,0);main.paddingLeft=main.paddingRight=mobile?20:178;main.paddingTop=mobile?22:30;main.paddingBottom=32;if(!mobile)main.minHeight=830;
+    const width=mobile?350:1084;
+    const crumb=box(main,'Breadcrumb',width,'HORIZONTAL',10);crumb.counterAxisAlignItems='CENTER';text(crumb,'PortalMix',11,'muted','regular',64,null,false);icon(crumb,'chevron',13,'muted');text(crumb,'Cadastro',11,'ink','regular',72,null,false);
+    const body=box(main,'Cadastro do supermercado',width,mobile?'VERTICAL':'HORIZONTAL',mobile?27:70);
+    intro(body,mobile?350:441);registration(body,mobile?350:573,i>=5?'filled':states[i]);
+    const help=box(main,'Ajuda contextual',width,'HORIZONTAL',11);help.primaryAxisAlignItems='CENTER';help.counterAxisAlignItems='CENTER';icon(help,'help',20,'muted');
+    const helpCopy=box(help,'Ajuda',mobile?175:195,'VERTICAL',2);text(helpCopy,'Uma dúvida no caminho?',11,'ink','semibold');text(helpCopy,'Estamos aqui para facilitar.',10,'muted');text(help,'Ver ajuda',11,'primary','semibold',67,'action/ajuda',false);
+    instance(screen,ctx.components.footers[ctx.device],'Footer');
+    if(i>=5)modalScreen(screen,states[i]);
+    results.push({id:screen.id,name:screen.name,width:screen.width,height:screen.height,descendants:screen.findAll(()=>true).length});
+}
+const types={};const imageNodes=[];for(const id of screenIds){const screen=await figma.getNodeByIdAsync(id);for(const n of screen.findAll(()=>true)){types[n.type]=(types[n.type]||0)+1;if('fills'in n&&Array.isArray(n.fills)&&n.fills.some(p=>p.type==='IMAGE'))imageNodes.push({id:n.id,name:n.name,type:n.type,width:n.width,height:n.height});}}
+return {screens:results,nodeTypes:types,imageNodes,createdNodeIds:(await Promise.all(screenIds.map(async id=>ids(await figma.getNodeByIdAsync(id))))).flat()};

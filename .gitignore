@@ -1,0 +1,9 @@
+node_modules/
+.next/
+out/
+.vercel/
+.npm-cache/
+*.tsbuildinfo
+.env*
+!.env.example
+test-results/

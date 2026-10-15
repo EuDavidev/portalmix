@@ -1,0 +1,60 @@
+const page = await figma.getNodeByIdAsync(ctx.pageId);
+await figma.setCurrentPageAsync(page);
+await Promise.all(Object.values(ctx.fonts).map(f => figma.loadFontAsync(f)));
+const colorVars = {};
+for (const [key,id] of Object.entries(ctx.colors)) colorVars[key] = await figma.variables.getVariableByIdAsync(id);
+const spaceVars = {};
+for (const [key,id] of Object.entries(ctx.spaces || {})) spaceVars[key] = await figma.variables.getVariableByIdAsync(id);
+function flatIds(value){return typeof value==='string'?[value]:Object.values(value).flatMap(flatIds);}
+const componentNodes=new Map(await Promise.all(flatIds(ctx.components).map(async id=>[id,await figma.getNodeByIdAsync(id)])));
+function rgb(hex) { return {r:parseInt(hex.slice(1,3),16)/255,g:parseInt(hex.slice(3,5),16)/255,b:parseInt(hex.slice(5,7),16)/255}; }
+function paint(key) { const p={type:'SOLID',color:rgb(ctx.palette[key])}; return colorVars[key] ? figma.variables.setBoundVariableForPaint(p,'color',colorVars[key]) : p; }
+function fill(n,key) { n.fills=key?[paint(key)]:[]; }
+function stroke(n,key) { n.strokes=[paint(key)]; n.strokeWeight=1; }
+function space(n,prop,value) { n[prop]=value; if(spaceVars[value]) n.setBoundVariable(prop,spaceVars[value]); }
+function box(parent,name,width,direction='VERTICAL',gap=0,padding=0,bg=null,isComponent=false) {
+    const n=isComponent?figma.createComponent():figma.createAutoLayout(direction);
+    if(isComponent)n.layoutMode=direction;
+    parent.appendChild(n); n.name=name; n.resize(width,10);
+    n.primaryAxisSizingMode='AUTO'; n.counterAxisSizingMode='FIXED';
+    n.layoutSizingHorizontal='FIXED'; n.layoutSizingVertical='HUG';
+    n.clipsContent=false; fill(n,bg);
+    space(n,'itemSpacing',gap);
+    for(const k of ['paddingTop','paddingBottom','paddingLeft','paddingRight'])space(n,k,padding);
+    return n;
+}
+function text(parent,value,size=12,color='ink',weight='regular',width=parent.width-parent.paddingLeft-parent.paddingRight,name=null,flex=true) {
+    const n=figma.createText(); n.fontName=ctx.fonts[weight]||ctx.fonts.regular;
+    n.fontSize=size; n.lineHeight={unit:'PERCENT',value:150};
+    const style=ctx.styles[`${size}/${weight}`]; if(style)n.textStyleId=style;
+    n.name=name||value.slice(0,65); fill(n,color);
+    n.resize(Math.max(1,width),size*1.5); n.textAutoResize='HEIGHT'; n.characters=value;
+    parent.appendChild(n); if(flex)n.layoutSizingHorizontal='FILL';
+    return n;
+}
+function icon(parent,name,size=20,color='primary') {
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="'+ctx.palette[color]+'" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+ctx.paths[name]+'"/></svg>';
+    const n=figma.createNodeFromSvg(svg); n.name='Icon/'+name; parent.appendChild(n); n.resize(size,size);
+    for(const v of n.findAllWithCriteria({types:['VECTOR']})) {
+        if(v.strokes.length)v.strokes=[paint(color)];
+        if(v.fills.length)v.fills=[paint(color)];
+    }
+    return n;
+}
+function divider(parent,width) { const n=figma.createRectangle();parent.appendChild(n);n.name='Divider';n.resize(width,1);n.layoutSizingHorizontal='FILL';fill(n,'line');return n; }
+function bindText(component,node,label) { const key=component.addComponentProperty(label,'TEXT',node.characters);node.componentPropertyReferences={characters:key};return key; }
+function instance(parent,id,name,width=null) { const main=componentNodes.get(id); const n=main.createInstance();parent.appendChild(n);n.name=name;if(width!==null)n.resize(width,n.height);return n; }
+function property(instance,label,value) { const key=Object.keys(instance.componentProperties).find(k=>k.split('#')[0]===label);if(key)instance.setProperties({[key]:value}); }
+function button(parent,label,kind='Primary',action='',full=false,iconName=null) {
+    const n=instance(parent,ctx.components.buttons[kind],action?'action/'+action:label);
+    property(n,'Label',label);
+    const labelNode=n.findOne(x=>x.type==='TEXT'&&x.name==='Label');
+    if(full){n.resize(parent.width-parent.paddingLeft-parent.paddingRight,48);n.layoutSizingHorizontal='FILL';}
+    return n;
+}
+function note(parent,value,width,kind='info') {
+    if(ctx.components.notice){const n=instance(parent,ctx.components.notice,'Notice',width);property(n,'Text',value);return n;}
+    const n=box(parent,'Notice',width,'HORIZONTAL',10,13,'soft');n.cornerRadius=8;stroke(n,'line');
+    icon(n,kind,19,'primary');text(n,value,11,'muted','regular',width-66,null,true);return n;
+}
+function ids(root){return [root.id,...root.findAll(()=>true).map(n=>n.id)];}

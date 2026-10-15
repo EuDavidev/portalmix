@@ -1,0 +1,32 @@
+const scrim=await figma.variables.getVariableByIdAsync(SCRIM_ID);
+const scrimPaint=figma.variables.setBoundVariableForPaint({type:'SOLID',color:rgb(ctx.palette.ink)},'color',scrim);
+const roots=ctx.roots[ctx.device==='Mobile'?'mobile':'desktop'];
+const screens=await Promise.all(roots.map(id=>figma.getNodeByIdAsync(id)));
+const changed=[];let reactions=0;
+async function navigate(node,target,back=false){
+    await node.setReactionsAsync([{trigger:{type:'ON_CLICK'},actions:[back?{type:'BACK'}:{type:'NODE',destinationId:target,navigation:'NAVIGATE',transition:{type:'DISSOLVE',easing:{type:'EASE_OUT'},duration:.2},resetScrollPosition:true}]}]);changed.push(node.id);reactions++;
+}
+for(let row=0,y=160;row<3;row++){
+    const group=screens.slice(row*3,row*3+3);
+    for(const screen of group){screen.y=y;changed.push(screen.id);}
+    y+=Math.max(...group.map(s=>s.height))+160;
+}
+for(let i=0;i<screens.length;i++){
+    const screen=screens[i];
+    const overlay=screen.findOne(n=>n.type==='FRAME'&&n.name==='Modal overlay');if(overlay){overlay.fills=[scrimPaint];changed.push(overlay.id);}
+    for(const n of screen.findAll(n=>n.name.startsWith('action/'))){
+        const action=n.name.slice(7);
+        const target=action==='revisar'?roots[3]:action==='validar'?roots[2]:action==='editar'?roots[1]:action==='concluir'?roots[4]:action==='reiniciar'||action==='confirmar-limpeza'?roots[0]:action==='limpar'?roots[7]:action==='ajuda'?roots[5]:action==='privacidade'?roots[6]:action==='como-funciona'?roots[8]:null;
+        if(action==='fechar')await navigate(n,null,true);
+        else if(target&&target!==screen.id&&!(action==='limpar'&&i===0))await navigate(n,target);
+    }
+    if(i===0||i===2)for(const n of screen.findAll(n=>n.type==='INSTANCE'&&n.name.startsWith('Field/')))await navigate(n,roots[1]);
+}
+page.flowStartingPoints=[{nodeId:roots[0],name:'PortalMix · '+ctx.device+' · Cadastro de clientes'},{nodeId:roots[1],name:'PortalMix · '+ctx.device+' · Dados de exemplo'}];
+const countTypes={};const raster=[];const wrongFonts=[];
+for(const screen of screens)for(const n of screen.findAll(()=>true)){
+    countTypes[n.type]=(countTypes[n.type]||0)+1;
+    if(n.type==='TEXT'&&typeof n.fontName==='object'&&n.fontName.family!=='Open Sans')wrongFonts.push({id:n.id,font:n.fontName});
+    if('fills'in n&&Array.isArray(n.fills)&&n.fills.some(p=>p.type==='IMAGE'))raster.push(n.id);
+}
+return {device:ctx.device,screens:screens.map(s=>({id:s.id,name:s.name,width:s.width,height:s.height,x:s.x,y:s.y})),reactions,wrongFonts,imageNodes:raster,nodeTypes:countTypes,mutatedNodeIds:changed};

@@ -1,0 +1,32 @@
+const notice=box(page,'Notice/Informativo',507,'HORIZONTAL',10,13,'soft',true);notice.x=780;notice.y=720;notice.cornerRadius=8;stroke(notice,'line');
+icon(notice,'info',19);bindText(notice,text(notice,'Este é um exercício de usabilidade. Nenhuma conta ou pedido real é criado.',11,'muted','regular',441),'Text');
+ctx.components.notice=notice.id;componentNodes.set(notice.id,notice);
+const checks=[];ctx.components.checkboxes={};
+for(const checked of [false,true]){
+    const c=box(page,'Checked='+checked,507,'HORIZONTAL',10,0,null,true);c.counterAxisAlignItems='MIN';
+    const square=box(c,'Checkbox',17,'HORIZONTAL',0,0,checked?'primary':'white');square.resize(17,17);square.layoutSizingVertical='FIXED';square.cornerRadius=4;stroke(square,checked?'primary':'inputBorder');
+    if(checked)icon(square,'check',15,'white');
+    const copy=box(c,'Copy',480,'VERTICAL',3);copy.layoutSizingHorizontal='FILL';bindText(c,text(copy,'Quero receber ofertas e novidades do PortalMix.',11,'ink','regular',480,'Label'),'Label');text(copy,'Opcional. Você decide se quer participar.',10,'muted');
+    checks.push(c);ctx.components.checkboxes[String(checked)]=c.id;componentNodes.set(c.id,c);
+}
+const checkSet=figma.combineAsVariants(checks,page);checkSet.name='Checkbox';checkSet.x=780;checkSet.y=880;checks.forEach((c,i)=>{c.x=20;c.y=20+i*100;});checkSet.resizeWithoutConstraints(550,220);
+const fields=Object.values(ctx.components.fields).map(id=>componentNodes.get(id));
+const fieldSet=fields[0].parent;const trailingKey=fieldSet.addComponentProperty('Show trailing icon','BOOLEAN',false);
+for(const field of fields){const control=field.findOne(n=>n.type==='FRAME'&&n.name==='Control');const arrow=icon(control,'chevron',16,'muted');arrow.visible=false;arrow.componentPropertyReferences={visible:trailingKey};}
+ctx.components.headers={};ctx.components.footers={};
+for(const device of ['Desktop','Mobile']){
+    const mobile=device==='Mobile';const w=mobile?390:1440;const padding=mobile?20:156;
+    const h=box(page,'Header/'+device,w,'HORIZONTAL',0,padding,'white',true);h.x=780;h.y=1180+(mobile?130:0);h.paddingTop=h.paddingBottom=mobile?16:22;h.counterAxisAlignItems='CENTER';h.primaryAxisAlignItems='SPACE_BETWEEN';h.strokes=[paint('line')];h.strokeBottomWeight=1;h.strokeTopWeight=h.strokeLeftWeight=h.strokeRightWeight=0;
+    const logo=instance(h,ctx.components.brand,'Brand/PortalMix');if(mobile){logo.resize(173,logo.height);const word=logo.findOne(n=>n.type==='TEXT'&&n.characters==='portalmix.');word.fontSize=23;}
+    const nav=box(h,'Navigation',mobile?117:407,'HORIZONTAL',mobile?10:24);nav.counterAxisAlignItems='CENTER';nav.primaryAxisAlignItems='SPACE_BETWEEN';
+    text(nav,'Cadastro',12,'primary','semibold',64,'nav/cadastro',false);
+    if(!mobile)text(nav,'Como funciona',12,'muted','regular',96,'action/como-funciona',false);
+    const help=box(nav,'action/ajuda',mobile?44:161,'HORIZONTAL',8,mobile?12:10);help.resize(mobile?44:161,44);help.layoutSizingVertical='FIXED';help.cornerRadius=7;help.counterAxisAlignItems='CENTER';help.primaryAxisAlignItems='CENTER';stroke(help,'line');icon(help,'help',18);
+    if(!mobile)text(help,'Precisa de ajuda?',11,'ink','semibold',117,null,false);
+    ctx.components.headers[device]=h.id;componentNodes.set(h.id,h);
+    const foot=box(page,'Footer/'+device,w,mobile?'VERTICAL':'HORIZONTAL',mobile?8:30,mobile?20:156,null,true);foot.x=780;foot.y=1510+(mobile?100:0);foot.paddingTop=foot.paddingBottom=22;foot.primaryAxisAlignItems=mobile?'CENTER':'SPACE_BETWEEN';foot.counterAxisAlignItems='CENTER';foot.strokes=[paint('line')];foot.strokeTopWeight=1;foot.strokeBottomWeight=foot.strokeLeftWeight=foot.strokeRightWeight=0;
+    const footText=text(foot,'© 2026 PortalMix / Seu supermercado, mais perto de você.',10,'muted','regular',mobile?350:560,null,false);if(mobile)footText.textAlignHorizontal='CENTER';
+    const legal=box(foot,'Legal',mobile?300:310,'HORIZONTAL',24);legal.counterAxisAlignItems='CENTER';legal.primaryAxisAlignItems='SPACE_BETWEEN';text(legal,'Projeto acadêmico de IHC',10,'muted','regular',180,null,false);text(legal,'Privacidade',10,'muted','regular',83,'action/privacidade',false);
+    ctx.components.footers[device]=foot.id;componentNodes.set(foot.id,foot);
+}
+return {ctx,createdNodeIds:page.findAll(()=>true).map(n=>n.id),mutatedNodeIds:fields.map(f=>f.id),counts:{components:page.findAllWithCriteria({types:['COMPONENT']}).length,sets:page.findAllWithCriteria({types:['COMPONENT_SET']}).length}};
